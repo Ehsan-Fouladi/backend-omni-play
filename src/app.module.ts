@@ -1,0 +1,52 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import configuration from './shared/config/configuration';
+import { DatabaseModule } from './shared/database/database.module';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { LoggerModule } from 'nestjs-pino';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      load: [configuration],
+      isGlobal: true,
+    }),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        transport:
+          process.env.NODE_ENV !== 'production'
+            ? {
+                target: 'pino-pretty',
+                options: {
+                  colorize: true,
+                  singleLine: true,
+                  ignore: 'pid,hostname',
+                  translateTime: 'SYS:standard',
+                },
+              }
+            : undefined,
+        level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
+        customLogLevel: (req, res, err) => {
+          if (err || res.statusCode >= 500) {
+            return 'error';
+          }
+
+          const url = req.url ?? '';
+
+          if (url === '/api/v1/metrics' || url.startsWith('/api/v1/metrics?')) {
+            return 'silent';
+          }
+
+          if (res.statusCode >= 400) {
+            return 'warn';
+          }
+
+          return 'info';
+        },
+      },
+    }),
+    PrometheusModule.register(),
+    DatabaseModule,
+  ],
+})
+export class AppModule {}
