@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import configuration from './shared/config/configuration';
-import { DatabaseModule } from './shared/database/database.module';
+import configuration from './core/config/configuration';
+import { DatabaseModule } from './core/database/database.module';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { LoggerModule } from 'nestjs-pino';
 
