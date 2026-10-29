@@ -52,7 +52,7 @@ async function bootstrap() {
   };
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('/v1/docs', app, documentFactory, configSwagger);
+  SwaggerModule.setup('v1/docs', app, documentFactory, configSwagger);
 
   await app.listen(process.env.PORT || 3000, '0.0.0.0');
 }

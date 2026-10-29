@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import configuration from './core/config/configuration';
-import { DatabaseModule } from './core/database/database.module';
-import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { LoggerModule } from 'nestjs-pino';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import configuration from '@core/config/configuration';
+import { DatabaseModule } from '@core/database/database.module';
+import { AuthModule } from '@modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { LoggerModule } from 'nestjs-pino';
     }),
     PrometheusModule.register(),
     DatabaseModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
