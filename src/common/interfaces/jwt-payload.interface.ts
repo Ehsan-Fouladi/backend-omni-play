@@ -1,4 +1,4 @@
-import { UserRole } from '@modules/auth/entities/auth.entity';
+import { UserRole } from 'src/modules/auth/entities/auth.entity';
 
 // export interface JwtPayload {
 //   sub: number;

@@ -1,11 +1,11 @@
-import { JwtPayload } from '@common/interfaces/jwt-payload.interface';
-import { UserPayload } from '@common/interfaces/user-payload.interface';
-import { AuthService } from '@modules/auth/auth.service';
-import { UserStatus } from '@modules/auth/entities/auth.entity';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { JwtPayload } from '../interfaces/jwt-payload.interface';
+import { UserPayload } from '../interfaces/user-payload.interface';
+import { UserStatus } from 'src/modules/auth/entities/auth.entity';
+import { AuthService } from 'src/modules/auth/auth.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -30,10 +30,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('توکن نامعتبر است');
     }
 
-    const user = await this.auth.usersRepository.findOne({ where: { id: payload.sub } });
+    const user = await this.auth.validation(payload.sub);
 
     if (!user || user.status !== UserStatus.ACTIVE) {
-        throw new UnauthorizedException('حساب کاربری غیرفعال یا مسدود است');
+      throw new UnauthorizedException('حساب کاربری غیرفعال یا مسدود است');
     }
 
     return {

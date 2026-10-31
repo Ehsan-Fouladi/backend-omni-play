@@ -1,4 +1,4 @@
-import { UserRole, UserStatus } from '@modules/auth/entities/auth.entity';
+import { UserRole, UserStatus } from 'src/modules/auth/entities/auth.entity';
 
 export interface UserPayload {
   userId: number;
