@@ -12,6 +12,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
 
+  redis:
+    image: redis:alpine
+    container_name: game_redis
+    ports:
+      - "6379:6379"
+    restart: always
+
   app:
     build: .
     container_name: nestjs_app

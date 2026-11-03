@@ -30,7 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('توکن نامعتبر است');
     }
 
-    const user = await this.auth.validation(payload.sub);
+    const user = await this.auth.findOneById(payload.sub);
 
     if (!user || user.status !== UserStatus.ACTIVE) {
       throw new UnauthorizedException('حساب کاربری غیرفعال یا مسدود است');
@@ -39,6 +39,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       userId: user.id,
       email: user.email,
+      username: user.username,
       role: user.role,
       status: user.status,
     };
