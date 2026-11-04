@@ -26,4 +26,4 @@ scrape_configs:
         target_label: 'image'
 
       - target_label: 'env'
-        replacement: 'production'
+        replacement: 'development'
