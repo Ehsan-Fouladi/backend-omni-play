@@ -7,6 +7,7 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import { ProfilesService } from './profiles.service';
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiParam,
@@ -23,6 +25,8 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from '../auth/entities/auth.entity';
 import { UpdateMatchStatsDto } from './dto/UpdateMatchStats.dto';
+import { LeaderboardQueryDto } from './dto/Leaderboard.dto';
+import { UpdateUserStatusDto } from './dto/UpdateUserStatus.dto';
 
 @Controller('profiles')
 @ApiBearerAuth('authorization')
@@ -37,6 +41,14 @@ export class ProfilesController {
   @HttpCode(HttpStatus.OK)
   getMyProfile(@Req() req) {
     return this.profilesService.getProfileByUserId(req.user.id);
+  }
+
+  @Get('leaderboard')
+  @ApiOkResponse({ description: 'لیست برترین بازیکنان (لیدربورد)' })
+  @Roles(UserRole.PLAYER)
+  @HttpCode(HttpStatus.OK)
+  getLeaderboard(@Query() leaderboardQueryDto: LeaderboardQueryDto) {
+    return this.profilesService.getLeaderboard(leaderboardQueryDto.limit);
   }
 
   @Get(':id')
@@ -65,5 +77,20 @@ export class ProfilesController {
       req.user.id,
       updateMatchStatsDto,
     );
+  }
+
+  @Patch(':id/status')
+  @ApiOkResponse({ description: 'تغییر وضعیت حساب کاربر توسط ادمین' })
+  @ApiNotFoundResponse({ description: 'پروفایل کاربر یافت نشد' })
+  @ApiConsumes('application/x-www-form-urlencoded', 'application/json')
+  @ApiParam({ name: 'id', example: 1, type: Number })
+  @ApiBody({ type: UpdateUserStatusDto })
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @HttpCode(HttpStatus.OK)
+  updateUserStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserStatus: UpdateUserStatusDto,
+  ) {
+    return this.profilesService.updateUserStatus(id, updateUserStatus.status);
   }
 }

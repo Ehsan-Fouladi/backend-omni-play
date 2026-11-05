@@ -4,12 +4,15 @@ import { Profile } from './entities/profile.entity';
 import { Repository } from 'typeorm';
 import { UpdateMatchStatsDto } from './dto/UpdateMatchStats.dto';
 import { ApiResponse } from 'src/common/interfaces/api-response.interface';
+import { Auth, UserStatus } from '../auth/entities/auth.entity';
 
 @Injectable()
 export class ProfilesService {
   constructor(
     @InjectRepository(Profile)
     private profiles: Repository<Profile>,
+    @InjectRepository(Auth)
+    private readonly users: Repository<Auth>,
   ) {}
 
   // async createProfile(user: Auth): Promise<Profile> {
@@ -103,6 +106,60 @@ export class ProfilesService {
       statusCode: HttpStatus.OK,
       message: 'امار با موفقیت ذخیره شد',
       data: saveProfile,
+    };
+  }
+
+  async getLeaderboard(limit: number): Promise<ApiResponse<Profile[]>> {
+    const leaderboard = await this.profiles.find({
+      relations: { user: true },
+      order: {
+        level: 'DESC',
+        current_xp: 'DESC',
+        kills: 'DESC',
+      },
+      take: limit,
+      select: {
+        id: true,
+        level: true,
+        rank: true,
+        current_xp: true,
+        kills: true,
+        matches_won: true,
+        user: {
+          username: true,
+        },
+      },
+    });
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'لیست لیدربورد با موفقیت دریافت شد',
+      data: leaderboard,
+    };
+  }
+
+  async updateUserStatus(
+    userId: number,
+    status: UserStatus,
+  ): Promise<ApiResponse<Partial<Auth>>> {
+    const user = await this.users.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException('کاربر مورد نظر یافت نشد');
+    }
+
+    user.status = status;
+
+    const updatedUser = await this.users.save(user);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: `وضعیت کاربر با موفقیت به ${status} تغییر یافت`,
+      data: {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        status: updatedUser.status,
+      },
     };
   }
 }
