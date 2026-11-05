@@ -20,6 +20,7 @@ import { JwtPayload } from 'src/common/interfaces/jwt-payload.interface';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ResendVerificationOtpCodeDto } from './dto/ResendVerificationOtpCode.dto';
 import { Profile } from '../profiles/entities/profile.entity';
+import { ApiResponse } from 'src/common/interfaces/api-response.interface';
 
 @Injectable()
 export class AuthService {
@@ -236,7 +237,7 @@ export class AuthService {
     }
   }
 
-  async signUp(dto: SignUpDto) {
+  async signUp(dto: SignUpDto): Promise<ApiResponse<void>> {
     const email = dto.email.trim().toLowerCase();
     const username = dto.username.trim();
 
@@ -346,7 +347,7 @@ export class AuthService {
     };
   }
 
-  async resendVerificationOtpCode(dto: ResendVerificationOtpCodeDto) {
+  async resendVerificationOtpCode(dto: ResendVerificationOtpCodeDto): Promise<ApiResponse<void>> {
     const email = dto.email.trim().toLowerCase();
 
     const verifyUser = await this.users.findOne({ where: { email } });
