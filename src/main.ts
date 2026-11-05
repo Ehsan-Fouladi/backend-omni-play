@@ -23,7 +23,14 @@ async function bootstrap() {
     .setTitle('Omni Play')
     .setDescription('Omni Play stream and game backend')
     .setVersion('1.0')
-    .addBearerAuth()
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+      'authorization',
+    )
     .build();
 
   app.useLogger(app.get(Logger));

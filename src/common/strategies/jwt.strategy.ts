@@ -13,8 +13,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     configService: ConfigService,
     private readonly auth: AuthService,
   ) {
-    const secret =
-      configService.get<string>('JWT_SECRET') || 'default-secret-key';
+    const secret = configService.get<string>('JWT_SECRET');
     if (!secret) {
       throw new Error('کلید مخفی JWT در متغیرهای محیطی (.env) تنظیم نشده است!');
     }

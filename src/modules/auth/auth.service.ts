@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { Auth } from './entities/auth.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { SignUpDto } from './dto/signup.dto';
 import { SignInDto } from './dto/signing.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -19,7 +19,7 @@ import { VerificationEmailDto } from './dto/verificationEmail.dto';
 import { JwtPayload } from 'src/common/interfaces/jwt-payload.interface';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ResendVerificationOtpCodeDto } from './dto/ResendVerificationOtpCode.dto';
-import {} from 'bcrypt';
+import { Profile } from '../profiles/entities/profile.entity';
 
 @Injectable()
 export class AuthService {
@@ -29,6 +29,7 @@ export class AuthService {
     private readonly redis: RedisService,
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
+    private readonly dataSource: DataSource,
   ) {}
 
   private readonly OTP_TTL = 300;
@@ -274,16 +275,37 @@ export class AuthService {
 
     const hashedPassword = await hash(dto.password, 10);
 
-    const newUser = this.users.create({
-      username,
-      email,
-      password: hashedPassword,
-      isVerified: false,
+    const newUser = await this.dataSource.transaction(async (manager) => {
+      const userRepository = manager.getRepository(Auth);
+      const profileRepository = manager.getRepository(Profile);
+
+      const user = userRepository.create({
+        username,
+        email,
+        password: hashedPassword,
+        isVerified: false,
+      });
+
+      const saveUser = await userRepository.save(user);
+
+      const profile = profileRepository.create({
+        user: saveUser,
+        level: 1,
+        current_xp: 0,
+        next_level_xp: 100,
+        rank: 'Bronze',
+        kills: 0,
+        deaths: 0,
+        matches_won: 0,
+        matches_played: 0,
+      });
+
+      await profileRepository.save(profile);
+
+      return saveUser;
     });
 
-    await this.users.save(newUser);
-
-    await this.sendVerificationOtpCode(email);
+    await this.sendVerificationOtpCode(newUser.email);
 
     return {
       statusCode: HttpStatus.CREATED,

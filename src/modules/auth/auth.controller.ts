@@ -35,6 +35,7 @@ export class AuthController {
   @ApiOkResponse({ description: 'ثبت نام با موفقیت انجام شد' })
   @ApiBadRequestResponse({ description: 'کد تأیید منقضی شده یا وجود ندارد' })
   @ApiBadRequestResponse({ description: 'کد تأیید اشتباه است' })
+  @HttpCode(HttpStatus.OK)
   verificationEmail(@Body() verificationEmail: VerificationEmailDto) {
     return this.authService.verificationEmail(verificationEmail);
   }
@@ -45,6 +46,7 @@ export class AuthController {
   @ApiOkResponse({ description: 'کد تایید با موفقیت ارسال شد' })
   @ApiBadRequestResponse({ description: 'کاربر قبلا ثبت نام کرد' })
   @ApiBadRequestResponse({ description: 'ایمیل قبلاً تأیید شده است' })
+  @HttpCode(HttpStatus.OK)
   ResendVerificationOtpCode(
     @Body() resendVerificationOtpCode: ResendVerificationOtpCodeDto,
   ) {
@@ -59,6 +61,7 @@ export class AuthController {
   @ApiOkResponse({ description: 'با موفقیت وارد شدید' })
   @ApiBadRequestResponse({ description: 'کاربر قبلا ثبت نام کرد' })
   @ApiBadRequestResponse({ description: 'ایمیل قبلاً تأیید شده است' })
+  @HttpCode(HttpStatus.OK)
   signIn(@Body() signInDto: SignInDto) {
     return this.authService.signIn(signInDto);
   }
