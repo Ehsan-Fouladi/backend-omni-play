@@ -37,15 +37,15 @@ export class ProfilesController {
   @Get('me')
   @ApiOkResponse({ description: 'پروفایل شخصی شما' })
   @ApiNotFoundResponse({ description: 'پروفایل کاربر یافت نشد' })
-  @Roles(UserRole.PLAYER)
+  @Roles(UserRole.PLAYER, UserRole.SUPER_ADMIN, UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   getMyProfile(@Req() req) {
-    return this.profilesService.getProfileByUserId(req.user.id);
+    return this.profilesService.getProfileByUserId(req.user.id, req.user);
   }
 
   @Get('leaderboard')
   @ApiOkResponse({ description: 'لیست برترین بازیکنان (لیدربورد)' })
-  @Roles(UserRole.PLAYER)
+  @Roles(UserRole.PLAYER, UserRole.SUPER_ADMIN, UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   getLeaderboard(@Query() leaderboardQueryDto: LeaderboardQueryDto) {
     return this.profilesService.getLeaderboard(leaderboardQueryDto.limit);
@@ -57,10 +57,10 @@ export class ProfilesController {
   })
   @ApiNotFoundResponse({ description: 'پروفایل کاربر یافت نشد' })
   @ApiParam({ name: 'id', example: 1, type: Number })
-  @Roles(UserRole.PLAYER)
+  @Roles(UserRole.PLAYER, UserRole.SUPER_ADMIN, UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
-  getProfile(@Param('id', ParseIntPipe) userId: number) {
-    return this.profilesService.getProfileByUserId(userId);
+  getProfile(@Param('id', ParseIntPipe) userId: number, @Req() req) {
+    return this.profilesService.getProfileByUserId(userId, req.user);
   }
 
   @Patch('stats')

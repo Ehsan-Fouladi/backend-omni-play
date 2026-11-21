@@ -4,7 +4,7 @@ import { Profile } from './entities/profile.entity';
 import { Repository } from 'typeorm';
 import { UpdateMatchStatsDto } from './dto/UpdateMatchStats.dto';
 import { ApiResponse } from 'src/common/interfaces/api-response.interface';
-import { Auth, UserStatus } from '../auth/entities/auth.entity';
+import { Auth, UserRole, UserStatus } from '../auth/entities/auth.entity';
 
 @Injectable()
 export class ProfilesService {
@@ -30,7 +30,7 @@ export class ProfilesService {
   //   return this.profiles.save(profile);
   // }
 
-  async getProfileByUserId(userId: number): Promise<ApiResponse<Profile>> {
+  private async findProfileWithUserById(userId: number): Promise<Profile> {
     const profile = await this.profiles.findOne({
       where: { user: { id: userId } },
       relations: { user: true },
@@ -62,6 +62,25 @@ export class ProfilesService {
     });
 
     if (!profile) {
+      throw new NotFoundException('پروفایل کاربر یافت نشد');
+    }
+
+    return profile;
+  }
+
+  async getProfileByUserId(
+    targetUserId: number,
+    currentUser: { id: number; role: UserRole },
+  ): Promise<ApiResponse<Profile>> {
+    const profile = await this.findProfileWithUserById(targetUserId);
+
+    const isTargetStaff =
+      profile.user.role === UserRole.SUPER_ADMIN ||
+      profile.user.role === UserRole.ADMIN;
+
+    const isSelf = currentUser.id === profile.user.id;
+
+    if (isTargetStaff && !isSelf) {
       throw new NotFoundException('پروفایل کاربر یافت نشد');
     }
 
@@ -112,6 +131,12 @@ export class ProfilesService {
   async getLeaderboard(limit: number): Promise<ApiResponse<Profile[]>> {
     const leaderboard = await this.profiles.find({
       relations: { user: true },
+      where: {
+        user: {
+          role: UserRole.PLAYER,
+          status: UserStatus.ACTIVE,
+        },
+      },
       order: {
         level: 'DESC',
         current_xp: 'DESC',
